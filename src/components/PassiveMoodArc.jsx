@@ -14,30 +14,34 @@ export default function PassiveMoodArc({ emaState, messageCount }) {
   // emaState varia de 0 a 100
   const normalizedState = Math.max(0, Math.min(100, emaState));
 
-  // Especificações da curva SVG do arco (semi-arco inferior gracioso)
-  // Raio: 130, centro (160, 90), arco de -150° até -30°
-  const pathD = "M 35 125 A 130 110 0 0 1 285 125";
+  // Especificações da curva SVG do arco — usar uma curva cúbica (sorriso)
+  // Isso cria extremidades viradas para cima (como o termômetro da imagem)
+  // Pontos ajustados verticalmente para aproximar o arco do avatar
+  // Subimos o arco cerca de 1cm (~38px)
+  const pathD = "M 35 57 C 90 127, 230 127, 285 57";
 
   // Cálculo da posição da semente perolada ao longo do arco (0% = início azul, 100% = fim damasco)
   // Usamos interpolação paramétrica de ângulo de 195° até 345° (ou t de 0 a 1)
   const seedPosition = useMemo(() => {
-    // Ângulo em radianos de PI * 1.05 até PI * 1.95
-    const angleStart = Math.PI * 0.95;
-    const angleEnd = Math.PI * 0.05;
-    const angle = angleStart + (normalizedState / 100) * (angleEnd - angleStart);
+      // Usamos uma curva cúbica Bézier: P0, P1, P2, P3
+      const P0 = { x: 35, y: 57 };
+      const P1 = { x: 90, y: 127 };
+      const P2 = { x: 230, y: 127 };
+      const P3 = { x: 285, y: 57 };
 
-    const rx = 125;
-    const ry = 95;
-    const cx = 160;
-    const cy = 135;
+      const t = normalizedState / 100;
 
-    const x = cx + rx * Math.cos(angle);
-    const y = cy - ry * Math.sin(angle);
+      // Bézier cúbica (posição)
+      const mt = 1 - t;
+      const x = (mt * mt * mt) * P0.x + 3 * (mt * mt) * t * P1.x + 3 * mt * (t * t) * P2.x + (t * t * t) * P3.x;
+      const y = (mt * mt * mt) * P0.y + 3 * (mt * mt) * t * P1.y + 3 * mt * (t * t) * P2.y + (t * t * t) * P3.y;
 
-    // Ângulo de rotação da gota/semente perolada ao longo da tangente da curva
-    const tangentAngle = (angle * 180) / Math.PI + 90;
+      // Derivada para tangente (direção) — usado para rotação da semente
+      const dx = 3 * (mt * mt) * (P1.x - P0.x) + 6 * mt * t * (P2.x - P1.x) + 3 * (t * t) * (P3.x - P2.x);
+      const dy = 3 * (mt * mt) * (P1.y - P0.y) + 6 * mt * t * (P2.y - P1.y) + 3 * (t * t) * (P3.y - P2.y);
+      const tangentAngle = (Math.atan2(dy, dx) * 180) / Math.PI;
 
-    return { x, y, rotation: tangentAngle };
+      return { x, y, rotation: tangentAngle };
   }, [normalizedState]);
 
   const statusInfo = getEmaStatusInfo(normalizedState);
@@ -121,18 +125,14 @@ export default function PassiveMoodArc({ emaState, messageCount }) {
         </g>
       </svg>
 
-      {/* Rótulo de Status e Progresso Passivo */}
+      {/* Rótulo de Status — exibe descrição sem contadores */}
       <div className="mood-arc-status-row">
         <div className="mood-arc-status-badge">
           <span className="mood-arc-dot" style={{ backgroundColor: statusInfo.color }} />
-          <span className="mood-arc-label-text">
-            {statusInfo.label} ({Math.round(emaState)})
-          </span>
+          <span className="mood-arc-label-text">{statusInfo.label}</span>
         </div>
 
-        <span className="mood-arc-progress-text">
-          Aprendendo seu tom... ({shown}/{maxMessages})
-        </span>
+        <span className="mood-arc-progress-text">Aprendendo seu tom...</span>
       </div>
     </div>
   );

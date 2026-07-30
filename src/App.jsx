@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import html2canvas from 'html2canvas';
+import GIF from 'gif.js';
 import FlowerAvatar from './components/avatars/FlowerAvatar';
 import SunAvatar from './components/avatars/SunAvatar';
 import EmojiAvatar from './components/avatars/EmojiAvatar';
@@ -111,6 +113,16 @@ function MessageBubble({ msg }) {
     </div>
   );
 }
+
+/* ─── Share icon ────────────────────────────────────────────────────── */
+const ShareIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+       strokeLinecap="round" strokeLinejoin="round" style={{width:18,height:18}}>
+    <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+    <polyline points="16 6 12 2 8 6" />
+    <line x1="12" y1="2" x2="12" y2="15" />
+  </svg>
+);
 
 /* ─── Typing indicator (Animação de Reticências) ───────────────────────── */
 function TypingIndicator() {
@@ -311,9 +323,68 @@ function ChatScreen({ avatarKey, onChangeAvatar }) {
       {/* App Bar */}
       <div className="app-bar">
         <span className="app-bar-title">MoodCompanion</span>
-        <button className="app-bar-btn" onClick={onChangeAvatar} title="Mudar companheiro">
-          <UsersIcon />
-        </button>
+        <div style={{display:'flex', gap:8}}>
+          <button className="app-bar-btn" onClick={onChangeAvatar} title="Mudar companheiro">
+            <UsersIcon />
+          </button>
+          <button className="app-bar-btn" onClick={async () => {
+            try {
+              const avatarNode = document.querySelector('.avatar-stage');
+              const arcNode = document.querySelector('.mood-arc-container');
+              if (!avatarNode || !arcNode) throw new Error('Elements not found');
+
+              const wrapper = document.createElement('div');
+              wrapper.style.position = 'fixed';
+              wrapper.style.left = '-9999px';
+              wrapper.style.top = '0';
+              wrapper.style.zIndex = '9999';
+              wrapper.style.padding = '8px';
+              wrapper.style.background = 'transparent';
+
+              const aClone = avatarNode.cloneNode(true);
+              const cClone = arcNode.cloneNode(true);
+              wrapper.appendChild(aClone);
+              wrapper.appendChild(cClone);
+              document.body.appendChild(wrapper);
+
+              const frames = 16;
+              const duration = 1200; // ms
+              const delay = Math.round(duration / frames);
+
+              const workerUrl = new URL('gif.js/dist/gif.worker.js', import.meta.url).href;
+              const gif = new GIF({ workers: 2, quality: 10, workerScript: workerUrl });
+
+              for (let i = 0; i < frames; i++) {
+                await new Promise(r => setTimeout(r, delay));
+                const canvas = await html2canvas(wrapper, { backgroundColor: null, scale: 1 });
+                gif.addFrame(canvas, { delay });
+              }
+
+              const result = await new Promise((res, rej) => {
+                gif.on('finished', function(blob) { res(blob); });
+                gif.on('abort', () => rej(new Error('GIF abort')));
+                gif.on('error', (e) => rej(e));
+                gif.render();
+              });
+
+              wrapper.remove();
+
+              const url = URL.createObjectURL(result);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'mood-avatar.gif';
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+            } catch (e) {
+              console.error('GIF capture error', e);
+              alert('Erro ao gerar GIF: ' + (e.message || e));
+            }
+          }} title="Compartilhar avatar">
+            <ShareIcon />
+          </button>
+        </div>
       </div>
 
       {/* Avatar Central com Halo de Brilho Quente */}

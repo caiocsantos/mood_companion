@@ -405,7 +405,6 @@ function ChatScreen({ avatarKey, onChangeAvatar }) {
 
       <div className="chat-intro">
         <span>Escreva como você está se sentindo. Este app registra seu humor visualmente e não substitui apoio profissional.</span>
-        <span>As respostas usam análise local; se houver uma chave Gemini configurada, o app também adiciona uma camada extra de sensibilidade.</span>
       </div>
 
       {/* Avatar Central com Halo de Brilho Quente */}

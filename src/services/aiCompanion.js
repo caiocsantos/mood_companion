@@ -31,29 +31,22 @@ export async function getAIResponse(userMessage, currentScore, stage) {
     return 'Estou aqui com você. Pode me contar mais sobre o que está sentindo?';
   }
 
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-
-  if (apiKey && apiKey !== 'your_api_key_here') {
-    try {
-      const geminiResponse = await fetchGeminiContextualResponse(userMessage, apiKey);
-      if (geminiResponse) {
-        return geminiResponse;
-      }
-    } catch (err) {
-      console.warn('[AICompanion] Gemini REST error, fallback local:', err);
+  try {
+    const geminiResponse = await fetchGeminiContextualResponse(userMessage);
+    if (geminiResponse) {
+      return geminiResponse;
     }
+  } catch (err) {
+    console.warn('[AICompanion] Gemini backend error, fallback local:', err);
   }
 
-  // Fallback local contextual inteligente
   return getContextualLocalFallback(userMessage, currentScore, stage);
 }
 
 /**
  * Chamada à API REST do Gemini 2.0 Flash para geração conversacional contextualizada.
  */
-async function fetchGeminiContextualResponse(userMessage, apiKey) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
+async function fetchGeminiContextualResponse(userMessage) {
   // Atualiza histórico local
   chatHistory.push({ role: 'user', parts: [{ text: userMessage }] });
 
@@ -74,16 +67,16 @@ async function fetchGeminiContextualResponse(userMessage, apiKey) {
     }
   };
 
-  const response = await fetch(endpoint, {
+  const response = await fetch('/api/respond', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({ chatHistory, userMessage })
   });
 
   if (!response.ok) return null;
 
   const data = await response.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  const text = data?.text?.trim();
 
   if (text) {
     chatHistory.push({ role: 'model', parts: [{ text }] });

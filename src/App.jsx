@@ -339,10 +339,25 @@ function ChatScreen({ avatarKey, onChangeAvatar }) {
               wrapper.style.top = '0';
               wrapper.style.zIndex = '9999';
               wrapper.style.padding = '8px';
-              wrapper.style.background = 'transparent';
+              wrapper.style.background = '#ffffff'; // force white background for captures
+
+              const title = document.createElement('div');
+              title.textContent = 'MoodCompanion';
+              title.style.fontFamily = "'Outfit', sans-serif";
+              title.style.fontWeight = '700';
+              title.style.fontSize = '14px';
+              title.style.color = '#27402c';
+              title.style.position = 'absolute';
+              title.style.top = '8px';
+              title.style.left = '16px';
+              title.style.letterSpacing = '-0.4px';
 
               const aClone = avatarNode.cloneNode(true);
               const cClone = arcNode.cloneNode(true);
+              // remove descriptive labels from the cloned arc so GIF contains only avatar + graph
+              const statusRow = cClone.querySelector('.mood-arc-status-row');
+              if (statusRow) statusRow.remove();
+              wrapper.appendChild(title);
               wrapper.appendChild(aClone);
               wrapper.appendChild(cClone);
               document.body.appendChild(wrapper);
@@ -356,7 +371,7 @@ function ChatScreen({ avatarKey, onChangeAvatar }) {
 
               for (let i = 0; i < frames; i++) {
                 await new Promise(r => setTimeout(r, delay));
-                const canvas = await html2canvas(wrapper, { backgroundColor: null, scale: 1 });
+                const canvas = await html2canvas(wrapper, { backgroundColor: '#ffffff', scale: 2 });
                 gif.addFrame(canvas, { delay });
               }
 

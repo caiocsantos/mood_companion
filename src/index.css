@@ -72,6 +72,20 @@ html, body, #root {
   flex-direction: column;
 }
 
+/* Small title overlay in the device top-left to match app typography */
+.device-image-title {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-forest);
+  letter-spacing: -0.4px;
+  pointer-events: none;
+  z-index: 30;
+}
+
 /* Status Bar (Forest Green Icons on Light Cream) */
 .status-bar {
   height: var(--status-bar-h);

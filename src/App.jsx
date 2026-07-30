@@ -144,6 +144,7 @@ function SelectionScreen({ onSelect }) {
       <div className="selection-header">
         <h1 className="app-title">MoodCompanion</h1>
         <p className="selection-subtitle">Escolha seu Companheiro Emocional</p>
+        <p className="selection-note">Modo protótipo para acompanhar suas emoções e expressar como se sente.</p>
       </div>
 
       <div className="avatar-list">
@@ -259,8 +260,8 @@ function ChatScreen({ avatarKey, onChangeAvatar }) {
       enqueueSubstantiveMessage(text, handleFlushGeminiBatch);
     }
 
-    // Atualização EMA (α = 0.15)
-    setEmaState(prevEma => calculateNextEMA(prevEma, targetInputScore, false));
+    const nextEma = calculateNextEMA(emaState, targetInputScore, false);
+    setEmaState(nextEma);
 
     // Adiciona mensagem do usuário
     const userMsg = { id: Date.now().toString(), sender: 'user', text, tone, timestamp };
@@ -274,8 +275,8 @@ function ChatScreen({ avatarKey, onChangeAvatar }) {
 
     const minTypingDelayMs = Math.max(2200, Math.min(3800, 1800 + text.length * 30));
     const delayPromise = new Promise(resolve => setTimeout(resolve, minTypingDelayMs));
-    const currentScore = emaToScore(emaState);
-    const aiResponsePromise = getAIResponse(text, currentScore, currentStage);
+    const currentScore = emaToScore(nextEma);
+    const aiResponsePromise = getAIResponse(text, currentScore, emaToStage(nextEma));
 
     try {
       const [aiText] = await Promise.all([aiResponsePromise, delayPromise]);
@@ -402,13 +403,18 @@ function ChatScreen({ avatarKey, onChangeAvatar }) {
         </div>
       </div>
 
+      <div className="chat-intro">
+        <span>Escreva como você está se sentindo. Este app registra seu humor visualmente e não substitui apoio profissional.</span>
+        <span>As respostas usam análise local; se houver uma chave Gemini configurada, o app também adiciona uma camada extra de sensibilidade.</span>
+      </div>
+
       {/* Avatar Central com Halo de Brilho Quente */}
       <div className={`avatar-stage${isDigesting ? ' avatar-digesting' : ''}`}>
         <AvatarRenderer avatarKey={avatarKey} stage={currentStage} />
       </div>
 
       {/* Arco de Humor Passivo (Passive Mood Arc da image_3.png) */}
-      <PassiveMoodArc emaState={displayedEma} messageCount={messages.length} />
+      <PassiveMoodArc emaState={displayedEma} />
 
       {/* Mensagens de Chat */}
       <div className="messages-area">

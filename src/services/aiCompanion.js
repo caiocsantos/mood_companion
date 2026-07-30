@@ -7,8 +7,6 @@
  * 2. Fallback local inteligente com extração de tópicos contextuais.
  */
 
-const DEFAULT_API_KEY = 'AIzaSyAUd0aAOEgZrdYq1wYRZvLHW8xhg_7BqoA';
-
 const CONTEXT_SYSTEM_PROMPT = `Você é o MoodCompanion, um companheiro emocional empático, atencioso e afetuoso dentro de um diário visual interativo.
 
 REGRAS OBRIGATÓRIAS DE CONTEXTO:
@@ -33,7 +31,7 @@ export async function getAIResponse(userMessage, currentScore, stage) {
     return 'Estou aqui com você. Pode me contar mais sobre o que está sentindo?';
   }
 
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || DEFAULT_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
   if (apiKey && apiKey !== 'your_api_key_here') {
     try {

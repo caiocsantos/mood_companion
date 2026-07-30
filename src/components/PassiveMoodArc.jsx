@@ -10,7 +10,7 @@ import { getEmaStatusInfo } from '../services/emotionalState';
  * - Transição suave de movimento da semente perolada (1.5s, Ease-In-Out)
  * - Animação de fade de gradiente conforme a cor dominante muda
  */
-export default function PassiveMoodArc({ emaState, messageCount }) {
+export default function PassiveMoodArc({ emaState }) {
   // emaState varia de 0 a 100
   const normalizedState = Math.max(0, Math.min(100, emaState));
 
@@ -45,8 +45,6 @@ export default function PassiveMoodArc({ emaState, messageCount }) {
   }, [normalizedState]);
 
   const statusInfo = getEmaStatusInfo(normalizedState);
-  const maxMessages = 10;
-  const shown = Math.min(messageCount, maxMessages);
 
   return (
     <div className="mood-arc-container">

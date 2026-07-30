@@ -12,8 +12,6 @@
 
 const GEMINI_SYSTEM_PROMPT = `Você é um classificador emocional estrito. Receba um bloco de texto e retorne APENAS um JSON com o sentimento (-5 a 5) e a emoção dominante. Exemplo de resposta: {"score": 3, "emotion": "joy"}. Não adicione saudações ou textos explicativos.`;
 
-const DEFAULT_API_KEY = 'AIzaSyAUd0aAOEgZrdYq1wYRZvLHW8xhg_7BqoA';
-
 /**
  * Classifica um bloco acumulado de mensagens utilizando a API do Gemini Flash via REST.
  * @param {string[]} messagesBatch - Lista de mensagens acumuladas pelo debounce
@@ -22,9 +20,9 @@ const DEFAULT_API_KEY = 'AIzaSyAUd0aAOEgZrdYq1wYRZvLHW8xhg_7BqoA';
 export async function classifyBatchWithGemini(messagesBatch) {
   if (!messagesBatch || messagesBatch.length === 0) return null;
 
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || DEFAULT_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey || apiKey === 'your_api_key_here') {
-    console.warn('[GeminiClassifier] API Key não configurada.');
+    console.warn('[GeminiClassifier] API key não configurada. Usando apenas análise local.');
     return null;
   }
 

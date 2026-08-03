@@ -261,6 +261,14 @@ function ChatScreen({ avatarKey, onChangeAvatar }) {
     }
 
     const nextEma = calculateNextEMA(emaState, targetInputScore, false);
+    const nextStage = emaToStage(nextEma);
+    
+    // Debug: Log do progresso emocional
+    console.log(`[MoodCompanion] Mensagem: "${text}"`);
+    console.log(`  → Score de entrada: ${targetInputScore}`);
+    console.log(`  → EMA anterior: ${emaState.toFixed(2)} (stage: ${emaToStage(emaState)})`);
+    console.log(`  → EMA novo: ${nextEma.toFixed(2)} (stage: ${nextStage})`);
+    
     setEmaState(nextEma);
 
     // Adiciona mensagem do usuário
